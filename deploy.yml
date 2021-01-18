@@ -1,0 +1,38 @@
+host: webservers
+become: yes
+become_method: sudo
+remote_user: shubham
+
+tasks:
+- name:enable UFW
+ufw:
+state:enabled
+- name:Allow port 8080
+ufw:
+rule:allow
+port:8080
+proto:tcp
+- name:Allow port 22
+ufw:
+rule:allow
+port:22
+proto:tcp
+- name: Update Source List
+command:apt-get-update
+- name: Install required Jdk
+apt:
+  name:openjdk-11-jdk
+   state:present
+- name: Downloading tomcat
+      get_url:
+        url: "https://downloads.apache.org/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz"
+        dest: /usr/local
+- name: Extracting Tomcat
+unarchive:
+        src: "/usr/local/apache-tomcat-9.0.41.tar.gz"
+        dest: /usr/local
+        remote_src: yes
+    - name: Renaming tomcat home
+      command: mv /usr/local/apache-tomcat-9.0.41 /usr/local/tomcat
+    - name: running tomcat
+      shell: nohup /usr/local/tomcat/bin/startup.sh &
